@@ -138,7 +138,7 @@ intmat = np.matrix(intmat)
 plt.imshow(intmat, cmap='RdYlBu', interpolation='nearest')
 plt.savefig('figure/heatmap.png')
 ```
-![heatmap](/Statistics-Computation/pset2/figure/heatmap.png)
+![heatmap](/pset2/figure/heatmap.png)
 
 ## (c)
 To identify regions with high interaction frequencies, we will perform a series of hypothesis tests...Explain where this formula comes from and compute the value of Nsubmatrices for the chromosome 19-20 interaction matrix.
@@ -304,7 +304,7 @@ highlight = plt.imshow(intmat_highlight, cmap='bwr', interpolation='nearest')
 fig_hi = highlight.get_figure()
 fig_hi.savefig('figure/heatmap2.png', dpi = 300)
 ```
-![heatmap2](/figure/heatmap2.png)
+![heatmap2](/pset2/figure/heatmap2.png)
 ## (e)
 Run the procedure you developed in part (d) on all pairs of chromosomes. Count the number of intermingling 250kb regions for each pair, i.e. the number of entries in the interaction matrix that are contained in any of the identied interaction regions. Plot a heat map of the inter-chromosome interaction counts (i.e. a 22 * 22 matrix with these interaction counts).
 
@@ -350,7 +350,7 @@ ax = sns.heatmap(inter_count_mat,cmap='bwr', annot=True, annot_kws={"size": 3},s
 figure = ax.get_figure()    
 figure.savefig('figure/intermingling2.png', dpi=400)
 ```
-![intermingling](/figure/intermingling2.png)
+![intermingling](/pset2/figure/intermingling2.png)
 ### 2.2 Cell differentiation and gene expression
 In this problem, we analyze single-cell RNA-seq data and determine structure in this high-dimensional data.
 
