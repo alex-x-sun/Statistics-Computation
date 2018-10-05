@@ -1,5 +1,5 @@
 
-# Problem Set 2
+### Problem Set 2
 
 ```Python
 import pandas as pd
@@ -18,60 +18,44 @@ os.chdir('e:/MIT4/statistics-Computation/pset2')
 ```
 ### 2.1 Hi-C data analysis
 ```Python
-
 def read_data(x, y):
-
+	'''
+	Read data file "chrX_chrY.txt" given X and Y,
+	and return the pandas dataframe with column names
+	'''
 	file = 'data/hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
 	data = pd.read_csv(file, sep="	", header=None)
 	data.columns = ['Xloc','Yloc','IntFreq']
 	data[['Xloc','Yloc']] = data[['Xloc','Yloc']]/250000
-
 	return data
-# df11 = read_data(1, 1)
-# df11['Xloc'].unique().shape
-# df11['Xloc'].min()
-# df11
-
-
-
-# len(set(list(df11['Xloc'].values)+list(df11['Yloc'].values)))
-#
-# sorted(set(list(df11['Xloc'].values)+list(df11['Yloc'].values)))
-#
-# df12 = read_data(1, 2)
-#
-# len(set(list(df12['Xloc'].values)+list(df12['Yloc'].values)))
-
-
-
 ```
 ## (a)
 Compute the mean and standard deviation of log(1 + interaction frequency) across all inter-chromosome sites
-
 ```Python
 destdir = Path('e:/MIT4/statistics-Computation/pset2/data/hic/')
-files = [p for p in destdir.iterdir() if p.is_file()]
-
-
-for f in files:
-	data = pd.read_csv(f, sep="	", header=None).fillna(0)
-
-
-inters = []
+# files = [p for p in destdir.iterdir() if p.is_file()]
+# for f in files:
+# 	data = pd.read_csv(f, sep="	", header=None).fillna(0)
+# inters = []
 n = 22 # the total number of chromosomes
 
 def inter(x, y):
-
+	'''
+	Read data file "chrX_chrY.txt" given X and Y,
+	and return the value IntFreq column
+	'''
 	file = 'data/hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
 	data = pd.read_csv(file, sep="	", header=None).fillna(0)
 
 	return data.iloc[:,2]
 
 def inter_log(x, y):
-
+	'''
+	Read data file "chrX_chrY.txt" given X and Y,
+	and return the log transformed IntFreq column
+	'''
 	file = 'data/hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
 	data = pd.read_csv(file, sep="	", header=None).fillna(0)
-
 	return np.log(1 + data.iloc[:,2])
 
 
@@ -543,9 +527,11 @@ plt.savefig('figure/heatmap.png')
 ## (c)
 To identify regions with high interaction frequencies, we will perform a series of hypothesis tests...Explain where this formula comes from and compute the value of Nsubmatrices for the chromosome 19-20 interaction matrix.
 
-# explanation of p-value
 The null hypothesis is that each entry of the matrix is i.i.d Gaussian distributed (mu and sigma). Therefore, a k * l matrix, M, is a sample of size k * l, the test statistic is (m - mu)/SE. SE is for standard error, which equals to sigma/((k*l)^0.5). The p-value for M is 1 - norm.cdf((m - mu)/SE).
 
+For the interaction matrix, M_intmat, which has N_submatrices submatrices, we correct the p-value using Bonferroni correction by multiply the number of tests, so adjusted p-value is N_submatrices * (1 - norm.cdf((m - mu)/SE))
+
+# Another explanation if N_submatrices is not constant
 To correct the p-value for multiple tests on every submatrices, we use Holm-Bonferroni correction. For the sorted list of p-values for every test p_i, we reject null hypothesis when (N-i+1)p_i <= alpha, in which N equals to the total number of submatrices of M.
 
 The min(p_i) of all tests of submatrices of M is the p_i for M itself because it has the minimum SE while the m and sigma stay the same according to the null hypothesis( norm.cdf() is an increasing function, so 1 - norm.cdf((m - mu)/SE) goes up when SE goes down). So (N-i+1)p_i = N * min(p_i)
@@ -704,6 +690,7 @@ highlight = plt.imshow(intmat_highlight, cmap='bwr', interpolation='nearest')
 fig_hi = highlight.get_figure()
 fig_hi.savefig('figure/heatmap2.png', dpi = 300)
 ```
+# Interaction Zones, 500 iterations
 ![heatmap2](/pset2/figure/heatmap2.png)
 ## (e)
 Run the procedure you developed in part (d) on all pairs of chromosomes. Count the number of intermingling 250kb regions for each pair, i.e. the number of entries in the interaction matrix that are contained in any of the identied interaction regions. Plot a heat map of the inter-chromosome interaction counts (i.e. a 22 * 22 matrix with these interaction counts).
@@ -748,9 +735,16 @@ inter_count_mat = inter_count_mat.astype(int)
 sns.set(font_scale=0.8)
 ax = sns.heatmap(inter_count_mat,cmap='bwr', annot=True, annot_kws={"size": 3},square=True, linewidths=0.01,fmt='.1f')
 figure = ax.get_figure()    
-figure.savefig('figure/intermingling2.png', dpi=400)
+figure.savefig('figure/intermingling200.png', dpi=400)
 ```
-![intermingling](/pset2/figure/intermingling2.png)
+
+
+# Interaction Zones, 200 iterations
+![intermingling](/pset2/figure/intermingling200.png)
+
+# Interaction Zones, 100 iterations
+![intermingling](/pset2/figure/intermingling500.png)
+
 ### 2.2 Cell differentiation and gene expression
 In this problem, we analyze single-cell RNA-seq data and determine structure in this high-dimensional data.
 
