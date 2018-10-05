@@ -1,4 +1,4 @@
-<<<<<<< HEAD:pset2/ps2.md
+
 # Problem Set 2
 
 ```Python
@@ -784,16 +784,3 @@ Map the cells to a differentiation tree. (To do this, you can, for example, comp
 1. anout multiple tests
 2. read data with Python
 3. tSNE how to decide dimension
-
-
-
-
-
-
-
-
-
-
-
-#
->>>>>>> e45f503e63fba6a2b6551985c258e70e01801022:ps2.md
