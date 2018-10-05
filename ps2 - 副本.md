@@ -1,5 +1,5 @@
 # Problem Set 2
-![GitHub Logo](/heatmap2.png)
+![heatmap2](/heatmap2.png)
 
 
 
