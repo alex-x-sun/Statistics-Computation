@@ -1,4 +1,7 @@
 # Problem Set 2
+![GitHub Logo](/heatmap2.png)
+Format: ![Alt Text](url)
+
 
 ```Python
 import pandas as pd
