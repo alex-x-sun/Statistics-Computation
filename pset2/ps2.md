@@ -13,14 +13,14 @@ import re
 import statistics as stat
 import seaborn as sns
 
-os.chdir('e:/MIT4/6.439/pset2')
+os.chdir('e:/MIT4/statistics-Computation/pset2')
 ```
 ### 2.1 Hi-C data analysis
 ```Python
 
 def read_data(x, y):
 
-	file = 'hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
+	file = 'data/hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
 	data = pd.read_csv(file, sep="	", header=None)
 	data.columns = ['Xloc','Yloc','IntFreq']
 	data[['Xloc','Yloc']] = data[['Xloc','Yloc']]/250000
@@ -48,7 +48,7 @@ def read_data(x, y):
 Compute the mean and standard deviation of log(1 + interaction frequency) across all inter-chromosome sites
 
 ```Python
-destdir = Path('e:/MIT4/6.439/pset2/hic/')
+destdir = Path('e:/MIT4/statistics-Computation/pset2/data/hic/')
 files = [p for p in destdir.iterdir() if p.is_file()]
 
 
@@ -61,14 +61,14 @@ n = 22 # the total number of chromosomes
 
 def inter(x, y):
 
-	file = 'hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
+	file = 'data/hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
 	data = pd.read_csv(file, sep="	", header=None).fillna(0)
 
 	return data.iloc[:,2]
 
 def inter_log(x, y):
 
-	file = 'hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
+	file = 'data/hic'+'/chr'+str(x)+'_chr'+str(y)+'.txt'
 	data = pd.read_csv(file, sep="	", header=None).fillna(0)
 
 	return np.log(1 + data.iloc[:,2])
@@ -130,15 +130,15 @@ for index, row in df1920.iterrows():
 	intmat[int(row['Xloc'])][int(row['Yloc'])] = float(np.log(row['IntFreq']+1))
 
 intmat.shape
-np.savetxt("intmat.csv", intmat, delimiter=",")
+np.savetxt("data/intmat.csv", intmat, delimiter=",")
 
-intmat = pd.read_csv("intmat.csv", header = None)
+intmat = pd.read_csv("data/intmat.csv", header = None)
 intmat = np.matrix(intmat)
 # Plot heatmap
 plt.imshow(intmat, cmap='RdYlBu', interpolation='nearest')
-plt.savefig('heatmap.png')
-
+plt.savefig('figure/heatmap.png')
 ```
+![heatmap](/figure/heatmap.png)
 
 ## (c)
 To identify regions with high interaction frequencies, we will perform a series of hypothesis tests...Explain where this formula comes from and compute the value of Nsubmatrices for the chromosome 19-20 interaction matrix.
@@ -157,9 +157,6 @@ def num_submat(matrix):
 	# n_x, n_y = matrix.shape
 	# return n_x * (1 + n_x) * n_y * (1 + n_y)/4
 	return 899055234.0
-
-
-
 
 num_submat(intmat)
 np.nanmean(intmat)
@@ -256,8 +253,6 @@ def greedy_search(matrix, mu, sigma):
 
 	return M
 
-
-
 def find_minmat(matrix, mu, sigma, num_iter):
 	minmat = None
 	p = np.inf
@@ -275,8 +270,6 @@ def find_minmat(matrix, mu, sigma, num_iter):
 # minmat.getmat()
 # minmat.getp(mu_inters, sigma_inters)
 
-
-
 def find_interaction(matrix, mu, sigma, num_iter):
 	Z = matrix.copy()
 	inters = []
@@ -289,8 +282,6 @@ def find_interaction(matrix, mu, sigma, num_iter):
 		Z[xmin:xmax+1, ymin:ymax+1] = Z[xmin:xmax+1, ymin:ymax+1] - minmat.getmean()
 		minmat = find_minmat(Z, mu, sigma, num_iter)
 	return inters
-
-
 
 interaction_zones = find_interaction(intmat, mu_inters, sigma_inters, num_iter = 500)
 
@@ -306,15 +297,14 @@ for zone in interaction_zones:
 
 heatmap = plt.imshow(intmat, cmap='bwr', interpolation='nearest')
 fig_base = heatmap.get_figure()
-fig_base.savefig('heatmap.png', dpi = 300)
+fig_base.savefig('figure/heatmap1.png', dpi = 300)
 
 highlight = plt.imshow(intmat_highlight, cmap='bwr', interpolation='nearest')
 
 fig_hi = highlight.get_figure()
-fig_hi.savefig('heatmap2.png', dpi = 300)
-
-
+fig_hi.savefig('figure/heatmap2.png', dpi = 300)
 ```
+![heatmap2](/figure/heatmap2.png)
 ## (e)
 Run the procedure you developed in part (d) on all pairs of chromosomes. Count the number of intermingling 250kb regions for each pair, i.e. the number of entries in the interaction matrix that are contained in any of the identied interaction regions. Plot a heat map of the inter-chromosome interaction counts (i.e. a 22 * 22 matrix with these interaction counts).
 
@@ -358,9 +348,9 @@ inter_count_mat = inter_count_mat.astype(int)
 sns.set(font_scale=0.8)
 ax = sns.heatmap(inter_count_mat,cmap='bwr', annot=True, annot_kws={"size": 3},square=True, linewidths=0.01,fmt='.1f')
 figure = ax.get_figure()    
-figure.savefig('intermingling2.png', dpi=400)
+figure.savefig('figure/intermingling2.png', dpi=400)
 ```
-
+![intermingling](/figure/intermingling2.png)
 ### 2.2 Cell differentiation and gene expression
 In this problem, we analyze single-cell RNA-seq data and determine structure in this high-dimensional data.
 
