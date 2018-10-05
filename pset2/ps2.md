@@ -138,7 +138,7 @@ intmat = np.matrix(intmat)
 plt.imshow(intmat, cmap='RdYlBu', interpolation='nearest')
 plt.savefig('figure/heatmap.png')
 ```
-![heatmap](/figure/heatmap.png)
+![heatmap](/Statistics-Computation/pset2/figure/heatmap.png)
 
 ## (c)
 To identify regions with high interaction frequencies, we will perform a series of hypothesis tests...Explain where this formula comes from and compute the value of Nsubmatrices for the chromosome 19-20 interaction matrix.
