@@ -29,16 +29,6 @@ nx, ny = mask.shape
 nt = 100
 
 
-def readflow(x, y, t):
-	'''
-	read the flow data of position (x, y) of time t
-	'''
-	filex = 'data/'+str(t)+'u.csv'
-	filey = 'data/'+str(t)+'v.csv'
-	datax = pd.read_csv(filex, sep=",", header=None)
-	datay = pd.read_csv(filey, sep=",", header=None)
-	return (datax.iloc[x,y], datay.iloc[x,y])
-
 flow_arrx = np.zeros((nx, ny, nt))
 flow_arry = np.zeros((nx, ny, nt))
 flow_speed_arry = np.zeros((nx, ny, nt))
@@ -322,70 +312,92 @@ tracePlotCompare([trace120_5, trace120_10, trace120_50, trace120_100], 2, 2, '12
 ## (a)
 Devise and implement a scheme to plan a route that minimizes travel time. The vehicle consumes 1 unit of fuel for every 1 unit of time the engine is on. Plan a route from (x0; y0) = (70; 400) to (xf ; yf ) = (360; 170). How does the route vary for different values of V ? You are not required to find the optimal solution, but a very good solution.
 ```Python
-import networkx as nx
+import networkx as Netx
 
-mask = np.genfromtxt('data/mask.csv', delimiter=',')
-mask.shape
-X = np.arange(0, mask.shape[1])
-Y = np.arange(0, mask.shape[0])
+# read the data
+u40 = pd.read_csv('data/40u.csv',sep=",", header=None)
+v40 = pd.read_csv('data/40v.csv',sep=",", header=None)
+speed40 = np.sqrt(u40 ** 2 + v40 ** 2)
+mask = pd.read_csv('data/mask.csv', sep=",", header=None)
 
-m, n = np.meshgrid(X, Y)
 
-x = m * 3
-y = n * 3
+plt.imshow(u40, origin = 'lower')
+plt.imshow(mask,  origin = 'lower')
+Mask = mask[::-1]
+plt.imshow(Mask,  origin = 'lower')
 
-uM = np.genfromtxt('data/40u.csv', delimiter=',')
-vM = np.genfromtxt('data/40v.csv', delimiter=',')
-velocity = np.sqrt(uM ** 2 + vM ** 2)
+def ConstructGraph(Mask, v_boat, df_v = speed40):
+    # Construct the Graph
+    G = Netx.Graph()
 
-def build_graph(x, y, m, n, mask, velocity, motor_v):
-    G = nx.Graph()
-    i = 0
-    for (x_i, y_i, m_i, n_i, msk) in np.nditer([x, y, m, n, mask]):
-    #     if msk.item(0) == 1:
-        attr = {'m_i': m_i.item(0), 'n_i': n_i.item(0)}
-        G.add_node(i, pos=(x_i.item(0), y_i.item(0)), **attr)
-        i+=1
+    # Coordinate matrix
+    coord_mat = np.arange(Mask.shape[0] * Mask.shape[1]).reshape(Mask.shape)
 
+    # make each entry of the Mat a Graph node
+    for i in range(Mask.shape[0]):
+        for j in range(Mask.shape[1]):
+            if Mask.iloc[i , j] != 0:
+                code = coord_mat[i, j]
+                G.add_node(code, position = (i * 3, j * 3), coordx = i,coordy= j)
+
+    # add edges
     for node, data in G.nodes(data=True):
-        if data['m_i'] < mask.shape[1]-1:
-            if mask[data['n_i'], data['m_i']] == 1 and mask[data['n_i'], data['m_i']+1] == 1:
-                vel = velocity[data['n_i'], data['m_i']]
-                total_vel = 3/(((vel*(25/.9))*.036)+motor_v)
-                G.add_edge(node, node+1, weight=total_vel)
-        if data['n_i'] < mask.shape[0]-1:
-            if mask[data['n_i']+1, data['m_i']] == 1 and mask[data['n_i'], data['m_i']] == 1:
-                vel = velocity[data['n_i'], data['m_i']]
-                total_vel = 3/(((vel*(25/.9))*.036)+motor_v)
-                G.add_edge(node, node+mask.shape[1], weight=total_vel)
+
+        v_node = df_v.iloc[int(data['coordx']), int(data['coordy'])]
+        try:
+            t_total = 3/(v_node + v_boat)
+        except:
+            t_total = np.Inf
+
+        if (data['coordx'] < Mask.shape[0]-1) &  ((node + 1) in G.nodes()):
+            G.add_edge(node, node + 1, weight = t_total) # undirected graph, add edge linking the right node
+
+        if (data['coordy'] < Mask.shape[1]-1) & ((node + Mask.shape[0]) in G.nodes()):
+            G.add_edge(node, node + Mask.shape[0], weight = t_total)
+
     return G
 
-motor_velocities = [0, 5, 10, 50, 100, 200]
 
-for motor_v in motor_velocities:
-    G = build_graph(x, y, m, n, mask, velocity, motor_v)
+def findPath(startx, starty, endx, endy, Mask, v_boat, df_v = speed40):
 
-    x_start, y_start = int(70/3), int(400/3)
-    x_end, y_end = int(360/3), int(170/3)
+    coord_mat = np.arange(Mask.shape[0] * Mask.shape[1]).reshape(Mask.shape)
+    start_coord = coord_mat[getPoint(startx, starty)]
+    end_coord = coord_mat[getPoint(endx, endy)]
 
-    start_index = x_start + y_start*mask.shape[1]
-    end_index = x_end + y_end*mask.shape[1]
-    sp = nx.dijkstra_path(G, start_index, end_index, 'weight')
-    spl = nx.dijkstra_path_length(G, start_index, end_index, 'weight')
-    print('The length of the shortest path: ', spl)
+    graph = ConstructGraph(Mask, v_boat, df_v)
+    # find the shortest path
+    shorstpath = Netx.dijkstra_path(graph, start_coord, end_coord, 'weight')
+    shorstpath_len = Netx.dijkstra_path_length(graph, start_coord, end_coord, 'weight')
+    print('Shortest Path Length with boat speed = '+str(v_boat)+ ' : '+ str(shorstpath_len))
+    # return (shorstpath, shorstpath_len)
+
+
+
+findPath(70, 400, 360, 170, Mask, v_boat=5, df_v = speed40)
+findPath(70, 400, 360, 170, Mask, v_boat=10, df_v = speed40)
+findPath(70, 400, 360, 170, Mask, v_boat=50, df_v = speed40)
+findPath(70, 400, 360, 170, Mask, v_boat=100, df_v = speed40)
+
 ```
+Shortest Path Length with boat speed = 5 : 1495.9122597210715
+Shortest Path Length with boat speed = 10 : 811.439630624186
+Shortest Path Length with boat speed = 50 : 174.18555795602148
+Shortest Path Length with boat speed = 100 : 87.90732176442386
 
 ## (b)
 Describe a potential scheme that would compute the shortest path in a time varying flow. Specically, reconsider (a) while working with the whole data set. Explain the different pieces of the algorithm.
-```Python
 
-```
+# Answer:
+As the flow speed in each grid changes over time, it is hard to use a static graph to find the shortest path. One possible solution is the greedy algorithem that find the nearest node in each step:
 
+current_node = start_node
+dist = 0
+t = 0
+min_dist = min_d(start_node), min_d(node) is the function that return the nearest node_i in adjacent nodes and the corresponding distance in t
+while current_node != end_node:
+    node_i, dist_i = min_d(current_node)
+    current_node = node_i
+    dist = dist + dist_i
+    t = t + 1
 
-
-
-
-
-
-
-#
+Or we can use the average speed and construct a static graph.
