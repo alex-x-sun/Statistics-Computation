@@ -389,7 +389,7 @@ Describe a potential scheme that would compute the shortest path in a time varyi
 
 # Answer:
 As the flow speed in each grid changes over time, it is hard to use a static graph to find the shortest path. One possible solution is the greedy algorithem that find the nearest node in each step:
-
+```Python
 current_node = start_node
 dist = 0
 t = 0
@@ -399,5 +399,5 @@ while current_node != end_node:
     current_node = node_i
     dist = dist + dist_i
     t = t + 1
-
+```
 Or we can use the average speed and construct a static graph.
