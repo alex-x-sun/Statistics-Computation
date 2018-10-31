@@ -329,8 +329,7 @@ plt.imshow(Mask,  origin = 'lower')
 def ConstructGraph(Mask, v_boat, df_v = speed40):
     # Construct the Graph
     G = Netx.Graph()
-
-    # Coordinate matrix
+    # Coordinate matrix, each entry of the matrix is assigned to a unique integer
     coord_mat = np.arange(Mask.shape[0] * Mask.shape[1]).reshape(Mask.shape)
 
     # make each entry of the Mat a Graph node
@@ -390,14 +389,76 @@ Describe a potential scheme that would compute the shortest path in a time varyi
 # Answer:
 As the flow speed in each grid changes over time, it is hard to use a static graph to find the shortest path. One possible solution is the greedy algorithem that find the nearest node in each step:
 ```Python
-current_node = start_node
-dist = 0
-t = 0
-min_dist = min_d(start_node), min_d(node) is the function that return the nearest node_i in adjacent nodes and the corresponding distance in t
-while current_node != end_node:
-    node_i, dist_i = min_d(current_node)
-    current_node = node_i
-    dist = dist + dist_i
-    t = t + 1
+# current_node = start_node
+# dist = 0
+# t = 0
+# min_dist = min_d(start_node), min_d(node) is the function that return the nearest node_i in adjacent nodes and the corresponding distance in t
+# while current_node != end_node:
+#     node_i, dist_i = min_d(current_node)
+#     current_node = node_i
+#     dist = dist + dist_i
+#     t = t + 1
+# Another approach:
+# Build the graph in which each node in time t only links to 4 adjacent nodes in the next time point t+1
+flow_test = flow_speed_arry[100:150,100:120,]
+mask_test = Mask.iloc[100:150, 100:120]
+
+mask_test.shape
+flow_test.shape
+
+def ConstructGraph_Flow(Mask, v_boat, df_v = flow_speed_arry, n_split = 1):
+    # Construct the Graph
+    G = Netx.Graph()
+    # total number of steps
+    NT_total = flow_speed_arry.shape[2] * n_split
+    # Coordinate matrix, each entry of the matrix is assigned to a unique integer
+    coord_mat = np.arange(Mask.shape[0] * Mask.shape[1] * NT_total).reshape((Mask.shape[0] , Mask.shape[1] , NT_total))
+
+    # make each entry of the Mat a Graph node
+    for i in range(Mask.shape[0]):
+        for j in range(Mask.shape[1]):
+            for t in range(NT_total):
+                if Mask.iloc[i , j] != 0:
+                    code = coord_mat[i, j, t]
+                    G.add_node(code, position = (i * 3, j * 3, t * n_split), coordx = i, coordy= j, time = t)
+
+    # add edges
+    for node, data in G.nodes(data=True):
+
+        v_node = df_v[int(data['coordx']), int(data['coordy']), int(data['time'] * n_split)]
+
+        try:
+            t_total = 3/(v_node + v_boat)
+        except:
+            t_total = np.Inf
+
+        # 1. connect to itself: wait for t time
+        if (data['time'] < NT_total) & ((node + Mask.shape[0] * Mask.shape[1]) in G.nodes()):
+            G.add_edge(node, node + Mask.shape[0] * Mask.shape[1], weight = 3/n_split)
+
+        if (data['time'] < NT_total) & (data['coordx'] < Mask.shape[0]-1) & ((node + 1 + Mask.shape[0] * Mask.shape[1]) in G.nodes()):
+            G.add_edge(node, node + 1 + Mask.shape[0] * Mask.shape[1], weight = t_total) # undirected graph, add edge linking the right node
+
+        if (data['time'] < NT_total) & (data['coordy'] < Mask.shape[1]-1) & ((node + Mask.shape[0] + Mask.shape[0] * Mask.shape[1]) in G.nodes()):
+            G.add_edge(node, node + Mask.shape[0] + Mask.shape[0] * Mask.shape[1], weight = t_total)
+
+    return G
+graph_flow = ConstructGraph_Flow(mask_test, v_boat = 5, df_v = flow_test)
+
+
+def findPath_flow(startx, starty, endx, endy, T, Mask, v_boat, df_v = flow_test):
+
+    coord_mat = np.arange(Mask.shape[0] * Mask.shape[1]).reshape(Mask.shape)
+    start_coord = coord_mat[getPoint(startx, starty)]
+    end_coord = coord_mat[getPoint(endx, endy)]
+
+    graph = ConstructGraph_Flow(Mask, v_boat, df_v)
+    # find the shortest path
+    shorstpath = Netx.dijkstra_path(graph, start_coord, end_coord, 'weight')
+    shorstpath_len = Netx.dijkstra_path_length(graph, start_coord, end_coord, 'weight')
+    print('Shortest Path Length with boat speed = '+str(v_boat)+ ' : '+ str(shorstpath_len))
+    # return (shorstpath, shorstpath_len)
+
+
 ```
 Or we can use the average speed and construct a static graph.
