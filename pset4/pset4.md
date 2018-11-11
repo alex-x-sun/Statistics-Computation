@@ -194,9 +194,9 @@ fig2 = ax2.get_figure()
 fig2.savefig('figure/densechange.png')
 ```
 Plot of network size change:<br/>
-![sc](/pset4/figure/sizechange.png)
+![sc](/pset4/figure/sizechange.png)<br/>
 Plot of network density change:<br/>
-![dc](/pset4/figure/densechange.png)
+![dc](/pset4/figure/densechange.png)<br/>
 
 The network size and density decreased a lot between phase 4 and phase 5. It is caused by the seizure in phase 4. Phase 5 had no seizure, which caused the increase in network size and density in phase 6. The fluctuations after phase 6 were caused by seizures.
 
@@ -236,11 +236,11 @@ plt.show()
 
 ```
 Plot of betweeness centrality change of selected central actors:<br/>
-![cbc](/pset4/figure/central_actors_bc.png)
+![cbc](/pset4/figure/central_actors_bc.png)<br/>
 Plot of right eigenvector centrality change of selected central actors:<br/>
-![cec](/pset4/figure/central_actors_ec.png)
+![cec](/pset4/figure/central_actors_ec.png)<br/>
 Plot of left eigenvector centrality change of selected central actors:<br/>
-![celc](/pset4/figure/central_actors_elc.png)
+![celc](/pset4/figure/central_actors_elc.png)<br/>
 
 From the plot, we can see that n1 was in central position throughout the 11 phases, although we observed a drop in betweeness centrality in phase 9. n3 and n12's centrality dropped in phase 7 but increased after phase 7. n76 was steadly becoming more central, especially since phase 6. n87 started to become central since phase 8. n85 had a drop in phase 3 but generally highly connected with important actors.
 
