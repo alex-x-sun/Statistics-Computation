@@ -1,4 +1,4 @@
-### Problem Set 4
+# Problem Set 4
 
 ```Python
 import pandas as pd
@@ -18,16 +18,16 @@ import networkx as nx
 os.chdir('e:/MIT4/statistics-Computation/pset4')
 ```
 
-### 4.2  Investigating a time-varying criminal network
+## 4.2  Investigating a time-varying criminal network
 In this problem, you will study a time-varying criminal network that is repeatedly disturbed by police forces. The data for this problem can be found in CAVIAR.zip.
 
-## (a)
+### (a)
 For each of the 11 phases, compute and list the:
 • degree,
 • betweenness centrality
 • eigenvector centrality of the actors under investigation.
 
-# degree
+#### degree
 ```Python
 # the list of actors under investigation
 under_investigation = [1,3,83,86,85,6,11,88,106,89,84,5,8,76,77,87,82,96,12,17,80,33,16]
@@ -72,7 +72,7 @@ in-degrees:<br/>
 out-degrees:<br/>
 ![od](/pset4/figure/od.PNG)
 
-# Betweeness Centrality
+#### Betweeness Centrality
 ```Python
 between_df = pd.DataFrame(0, index = under_investigation, columns = range(1, phases+1))
 for p in range(1, phases+1):
@@ -84,7 +84,7 @@ for p in range(1, phases+1):
 betweeness centrality:\n
 ![bc](/pset4/figure/bc.PNG)
 
-# Eigenvector Centrality
+#### Eigenvector Centrality
 ```Python
 eigen_df = pd.DataFrame(0, index = under_investigation, columns = range(1, phases+1))
 for p in range(1, phases+1):
@@ -106,7 +106,7 @@ Table of right eigenvector centrality:<br/>
 Table of left eigenvector centrality:<br/>
 ![ecl](/pset4/figure/ecl.PNG)
 
-## (b)
+### (b)
 Describe which actors are central and which actors are only peripheral. Explain and validate
 your reasoning. Feel free to compute other graph parameters, in addition to the centrality
 measures in (a), to aid you in validating your answer. Who seem to be the three principal
@@ -128,7 +128,7 @@ The eigenvector centrality can measure an actor's connection with other importan
 
 However, all these measures cannot find the real central actor without further information about the behavioral and organizational pattern of this criminal network. It's possible that the bosses will call others to give orders but never receive calls, or only receive calls but issue orders in another way, or simply do not use telephone at all and do business through their agents. We can only know n1, n3, n12, n87, n76, n85 are important traffickers.
 
-## (c)
+### (c)
 Are there other actors that play an important role but are not on the list of investigation? List them, and explain why they are important.
 
 ```Python
@@ -171,7 +171,7 @@ np.setdiff1d(eigen_l_df.mean(1).sort_values(ascending = False)[:10].index.values
 The n8, n83, n89 are in betweeness centrality top 10 list of all actors but not investigated.
 The n88 is in right eigenvector centrality top 10 list of all actors but not investigated.
 The n6, n11 are in left eigenvector centrality top 10 list of all actors but not investigated.
-## (d)
+### (d)
 Describe the coarse pattern(s) you observe as the network evolves through the phases. Does
 the network evolution reect the background story? Explain.
 
@@ -201,7 +201,7 @@ Plot of network density change:<br/>
 The network size and density decreased a lot between phase 4 and phase 5. It is caused by the seizure in phase 4. Phase 5 had no seizure, which caused the increase in network size and density in phase 6. The fluctuations after phase 6 were caused by seizures.
 
 
-## (e)
+### (e)
 Describe and interpret the evolution of the role of the central actors found in (b). At which phases are they active? When do they withdraw? Find indices in the network evolution that reflect the description given to them.
 
 ```Python
@@ -244,7 +244,7 @@ Plot of left eigenvector centrality change of selected central actors:<br/>
 
 From the plot, we can see that n1 was in central position throughout the 11 phases, although we observed a drop in betweeness centrality in phase 9. n3 and n12's centrality dropped in phase 7 but increased after phase 7. n76 was steadly becoming more central, especially since phase 6. n87 started to become central since phase 8. n85 had a drop in phase 3 but generally highly connected with important actors.
 
-## (f)
+### (f)
 Examine the frequency and the directions of the communications of (n1) as the network evolves. Any contrast or pattern(s) you observe? Describe, explain and interpret.
 
 ```Python
@@ -269,7 +269,7 @@ We plot the in and out degree changes of n1:<br/>
 ![n1d](/pset4/figure/n1d.png)<br/>
 Generally, phone calls from n1 (out degree) were more than calls to n1 (in degree).In phase 6, n1 received more calls than making calls to others. His communication frequency dropped a lot in phase 9 corresponding to 2 seizures.
 
-## (g)
+### (g)
 Would you consider that the particular strategy adopted by the police had an impact on the criminal network throughout the different phases of the investigation? What kind of impact? Explain.
 
 ```Python
@@ -280,7 +280,7 @@ From the lineplot of network size and edge density, we found that the network is
 
 
 
-### 4.3  Co-offending Network
+## 4.3  Co-offending Network
 The data for this problem set consists of individuals who were arrested in Quebec between 2003 and 2010. Some of the individuals have always acted solo, and have been arrested alone throughout their 'career'. Others co-offended with other individuals, and have been arrested in groups. The goal of this problem set is to construct and analyze the co-oender network. The nodes in the network are the oenders, and two offenders share a (possibly weighted) edge whenever they are arrested for the same crime event.
 
 
@@ -346,7 +346,8 @@ nx.draw_shell(G, with_labels=True)
 
 ```
 
-(e) How many nodes does the network have? How many solo offenders are there in the data set? How many (unweighted) edges does the graph contain?
+### (e)
+How many nodes does the network have? How many solo offenders are there in the data set? How many (unweighted) edges does the graph contain?
 
 ```Python
 num_node = nx.number_of_nodes(G)
@@ -356,7 +357,8 @@ num_solo = len(set(cooffend_df['NoUnique'])) - num_node
 unweighted_size = G.size()
 
 ```
-(f) Plot the degree distribution (or an approximation of it if needed) of the network.
+### (f)
+Plot the degree distribution (or an approximation of it if needed) of the network.
 
 ```Python
 coof_degree = G.degree()
@@ -376,7 +378,8 @@ def PlotDegree(G):
 PlotDegree(G)
 
 ```
-(g) How many connected components does the network have?
+### (g)
+How many connected components does the network have?
 
 ```Python
 num_compo = nx.number_connected_components(G)
@@ -385,7 +388,8 @@ num_compo = nx.number_connected_components(G)
 We will now isolate the largest connected component and focus on it. This brings us down to a
 more manageable size.
 
-(h) How many nodes does the largest connected component have?
+### (h)
+How many nodes does the largest connected component have?
 
 ```Python
 max_compo = max(nx.connected_components(G), key=len)
@@ -393,12 +397,14 @@ G_max_compo = max_compo
 num_node_max_compo = nx.number_of_nodes(G_max_compo)
 ```
 
-(i) Compute the degree of the nodes, and plot the degree distribution (or an approximation of it if needed) for the largest connected component. Comment on the shape of the distribution.
+### (i)
+Compute the degree of the nodes, and plot the degree distribution (or an approximation of it if needed) for the largest connected component. Comment on the shape of the distribution.
 
 ```Python
 PlotDegree(G_max_compo)
 ```
-(j) Describe the general shape of the largest connected component. Use the degree distribution from above, and compute statistics of the network to obtain an overview of its characteristics. You may want to consider the edge density, clustering, diameter, etc. Comment on the results.
+### (j)
+Describe the general shape of the largest connected component. Use the degree distribution from above, and compute statistics of the network to obtain an overview of its characteristics. You may want to consider the edge density, clustering, diameter, etc. Comment on the results.
 
 ```Python
 nx.draw_shell(G_max_compo, with_labels=True)
@@ -410,19 +416,22 @@ dia = nx.diamete(G_max_compo)
 ```
 Thisfinal section involves some free form investigation. The following parts are optional for undergraduates.
 
-(k) How many crime events are executed only by young offenders?
+### (k)
+How many crime events are executed only by young offenders?
 
 ```Python
 young_offenders = net_df[net_df['Jeunes'] == 1]['NoUnique']
 
 
 ```
-(l) Investigate the relationship between young offenders and adult offenders. Study the structure of the crimes that include both, young and adult offenders. Discuss any patterns you observe.
+### (l)
+Investigate the relationship between young offenders and adult offenders. Study the structure of the crimes that include both, young and adult offenders. Discuss any patterns you observe.
 
 ```Python
 
 ```
-(m) Ask your own question, build new separate networks if needed, and get as much insight as you like. Feel free to focus on either the whole network, or the largest connected component.
+### (m) 
+Ask your own question, build new separate networks if needed, and get as much insight as you like. Feel free to focus on either the whole network, or the largest connected component.
 ```Python
 
 ```
