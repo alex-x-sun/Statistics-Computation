@@ -55,7 +55,7 @@ for p in range(1, phases+1):
     in_degrees = graphs[p].in_degree(nbunch = under_investigation)
     for i in under_investigation:
         in_degree_df.loc[i, p] = in_degrees[i]
-# in_degree_df
+in_degree_df
 
 out_degree_df = pd.DataFrame(0, index = under_investigation, columns = range(1, phases+1))
 
@@ -63,7 +63,7 @@ for p in range(1, phases+1):
     out_degrees = graphs[p].out_degree(nbunch = under_investigation)
     for i in under_investigation:
         out_degree_df.loc[i, p] = out_degrees[i]
-# out_degree_df
+out_degree_df
 
 ```
 in-degrees:<br/>
@@ -306,10 +306,10 @@ len(coofending_case_l)
 len(set(case_l))
 # there were 1164836 unique cases, in which 84239 cases were co-offending cases
 # remove individual cases
-net_df = cooffend_df[cooffend_df['SeqE'].isin(coofending_case_l)].sort_values(by = ['SeqE'])
-# net_df0 = net_df.copy()
-# net_df.head(20)
-# net_df = net_df0
+net_df0 = cooffend_df[cooffend_df['SeqE'].isin(coofending_case_l)].sort_values(by = ['SeqE']).to_sparse()
+
+# the whole network took forever to build, we use a reduced network instead.
+net_df = net_df0.iloc[:100,].to_sparse()
 
 # build the network
 G = nx.Graph()
@@ -321,19 +321,18 @@ for i in range(len(net_df)):
     # extract one observation of offender and case
     seq = net_df['SeqE'][i]
     offender = net_df['NoUnique'][i]
-    # add the offender into graph if it's not in it
-    if not G.has_node(offender):
-        G.add_node(offender)
+    # add the offender into graph
+    G.add_node(offender)
     # as the data we use here is sorted by case number, we only need to go case by case
     if seq == case_num:
         # if the offender is still in current case
         for x in offender_l:
+            G.add_edge(offender, x)
             # two possible cases: this offender co-offend other cases that have beed recorded in our graph with the same person, or this is the first recorded Cooffending
-
-            if G.has_edge(offender, x):
-                G[offender][x]['weight'] += 1
-            else:
-                G.add_edge(offender, x, weight = 1)
+            # if G.has_edge(offender, x):
+            #     G[offender][x]['weight'] += 1
+            # else:
+            #     G.add_edge(offender, x, weight = 1)
         # add this offender in the case offender list
         offender_l.append(offender)
 
@@ -342,7 +341,8 @@ for i in range(len(net_df)):
         case_num = seq
         offender_l = [offender]
 
-nx.draw_shell(G, with_labels=True)
+
+nx.draw(G, with_labels=True)
 
 ```
 
@@ -355,7 +355,6 @@ num_node = nx.number_of_nodes(G)
 num_solo = len(set(cooffend_df['NoUnique'])) - num_node
 
 unweighted_size = G.size()
-
 ```
 ### (f)
 Plot the degree distribution (or an approximation of it if needed) of the network.
@@ -383,7 +382,9 @@ How many connected components does the network have?
 
 ```Python
 num_compo = nx.number_connected_components(G)
+num_compo
 ```
+There are 26 components in our reduced network
 
 We will now isolate the largest connected component and focus on it. This brings us down to a
 more manageable size.
@@ -393,10 +394,12 @@ How many nodes does the largest connected component have?
 
 ```Python
 max_compo = max(nx.connected_components(G), key=len)
-G_max_compo = max_compo
+max_compo
+G_max_compo = G.subgraph(list(max_compo))
 num_node_max_compo = nx.number_of_nodes(G_max_compo)
+num_node_max_compo
 ```
-
+Our largest connected component has 8 nodes
 ### (i)
 Compute the degree of the nodes, and plot the degree distribution (or an approximation of it if needed) for the largest connected component. Comment on the shape of the distribution.
 
@@ -410,27 +413,37 @@ Describe the general shape of the largest connected component. Use the degree di
 nx.draw_shell(G_max_compo, with_labels=True)
 
 den = nx.density(G_max_compo)
-
-dia = nx.diamete(G_max_compo)
-
+den
+dia = nx.diameter(G_max_compo)
+dia
 ```
+This component's density is 0.75, and the diameter is 2.
+
+
 Thisfinal section involves some free form investigation. The following parts are optional for undergraduates.
 
 ### (k)
 How many crime events are executed only by young offenders?
 
 ```Python
-young_offenders = net_df[net_df['Jeunes'] == 1]['NoUnique']
-
-
+young_offenders_df = net_df0[net_df0['Jeunes'] == 1]
+adult_offenders_df = net_df0[net_df0['Jeunes'] == 0]
+young_offenders_df.head()
+len(set(young_offenders_df['SeqE']))
 ```
+There are 2517 crime events only by young offenders.
+
 ### (l)
 Investigate the relationship between young offenders and adult offenders. Study the structure of the crimes that include both, young and adult offenders. Discuss any patterns you observe.
 
 ```Python
+young_offenders = set(young_offenders_df['NoUnique'].tolist())
+adult_offenders = set(adult_offenders_df['NoUnique'].tolist())
+
+
 
 ```
-### (m) 
+### (m)
 Ask your own question, build new separate networks if needed, and get as much insight as you like. Feel free to focus on either the whole network, or the largest connected component.
 ```Python
 
