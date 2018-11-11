@@ -67,56 +67,10 @@ for p in range(1, phases+1):
 
 ```
 Table of in-degrees:
-1	2	3	4	5	6	7	8	9	10	11
-1	5	8	10	11	11	17	15	10	5	8	6
-3	2	1	6	4	3	9	2	8	5	1	0
-83	0	2	3	4	2	2	3	1	1	1	0
-86	0	0	3	2	1	0	0	1	0	1	1
-85	2	0	4	5	2	3	3	2	3	2	3
-6	3	0	3	1	2	0	1	0	1	0	0
-11	0	2	1	1	0	0	1	1	1	0	1
-88	4	2	0	2	1	0	2	0	0	0	1
-106	0	0	0	2	0	0	0	0	0	0	0
-89	2	2	1	2	3	0	0	0	1	0	0
-84	0	0	3	1	0	0	0	1	0	1	0
-5	1	1	2	1	2	1	1	0	0	0	0
-8	1	2	2	2	1	4	1	3	2	1	0
-76	0	2	1	2	1	6	3	2	3	3	3
-77	0	0	0	0	0	2	2	1	0	0	0
-87	0	0	0	0	0	0	1	4	5	3	3
-82	0	0	0	0	1	1	0	2	4	5	3
-96	0	0	0	0	0	0	0	0	3	2	1
-12	0	0	2	1	5	7	5	8	5	3	9
-17	0	0	0	0	0	1	0	0	1	1	2
-80	0	0	0	0	0	0	0	0	0	0	0
-33	0	0	0	0	0	0	0	0	0	0	0
-16	0	0	0	0	0	0	0	0	1	1	1
+![id](/pset4/figure/id.PNG)
 
 Table of out-degrees:
-1	2	3	4	5	6	7	8	9	10	11
-1	11	17	26	21	18	13	18	19	9	13	6
-3	2	2	6	6	4	9	9	9	11	1	1
-83	2	0	7	6	1	1	1	0	0	2	1
-86	0	1	4	3	1	0	0	1	0	0	0
-85	3	2	0	4	2	3	2	3	2	2	2
-6	1	1	2	1	1	1	1	1	0	0	0
-11	0	0	2	1	1	2	2	2	0	0	1
-88	4	2	2	1	1	0	0	0	1	0	0
-106	0	0	0	0	0	0	0	0	0	0	0
-89	2	2	1	6	0	0	0	0	0	0	0
-84	0	0	2	2	1	2	0	0	0	1	2
-5	0	0	0	1	0	3	0	0	0	0	0
-8	0	2	0	2	1	1	0	0	2	2	0
-76	0	0	2	1	2	4	5	5	3	1	7
-77	0	0	0	0	0	2	2	0	0	0	0
-87	0	0	0	0	0	2	3	9	7	11	4
-82	0	0	0	0	1	1	0	0	5	3	4
-96	0	0	0	0	0	0	0	0	2	1	2
-12	0	1	0	1	5	10	1	4	7	6	9
-17	0	0	0	0	1	1	1	1	1	0	1
-80	0	0	0	0	0	0	0	1	0	0	0
-33	0	0	0	0	0	0	0	1	0	0	0
-16	0	0	0	0	0	0	1	1	1	1	1
+![od](/pset4/figure/od.PNG)
 
 # Betweeness Centrality
 ```Python
@@ -128,7 +82,7 @@ for p in range(1, phases+1):
 # between_df
 ```
 Table of betweeness centrality:
-![bc](/pset4/figure/bc.png)
+![bc](/pset4/figure/bc.PNG)
 
 # Eigenvector Centrality
 ```Python
@@ -148,9 +102,9 @@ for p in range(1, phases+1):
 eigen_l_df
 ```
 Table of right eigenvector centrality:
-![ec](/pset4/figure/ec.png)
+![ec](/pset4/figure/ec.PNG)
 Table of left eigenvector centrality:
-![ecl](/pset4/figure/ecl.png)
+![ecl](/pset4/figure/ecl.PNG)
 
 ## (b)
 Describe which actors are central and which actors are only peripheral. Explain and validate
@@ -459,6 +413,8 @@ Thisfinal section involves some free form investigation. The following parts ar
 (k) How many crime events are executed only by young offenders?
 
 ```Python
+young_offenders = net_df[net_df['Jeunes'] == 1]['NoUnique']
+
 
 ```
 (l) Investigate the relationship between young offenders and adult offenders. Study the structure of the crimes that include both, young and adult offenders. Discuss any patterns you observe.
