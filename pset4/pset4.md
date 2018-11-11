@@ -66,10 +66,10 @@ for p in range(1, phases+1):
 # out_degree_df
 
 ```
-Table of in-degrees:
+in-degrees:<br/>
 ![id](/pset4/figure/id.PNG)
 
-Table of out-degrees:
+out-degrees:<br/>
 ![od](/pset4/figure/od.PNG)
 
 # Betweeness Centrality
@@ -81,7 +81,7 @@ for p in range(1, phases+1):
         between_df.loc[i, p] = b_cen[i]
 # between_df
 ```
-Table of betweeness centrality:
+betweeness centrality:\n
 ![bc](/pset4/figure/bc.PNG)
 
 # Eigenvector Centrality
@@ -101,9 +101,9 @@ for p in range(1, phases+1):
         eigen_l_df.loc[i, p] = e_lcen[i]
 eigen_l_df
 ```
-Table of right eigenvector centrality:
+Table of right eigenvector centrality:<br/>
 ![ec](/pset4/figure/ec.PNG)
-Table of left eigenvector centrality:
+Table of left eigenvector centrality:<br/>
 ![ecl](/pset4/figure/ecl.PNG)
 
 ## (b)
@@ -193,9 +193,9 @@ fig1.savefig('figure/sizechange.png')
 fig2 = ax2.get_figure()
 fig2.savefig('figure/densechange.png')
 ```
-Plot of network size change:
+Plot of network size change:<br/>
 ![sc](/pset4/figure/sizechange.png)
-Plot of network density change:
+Plot of network density change:<br/>
 ![dc](/pset4/figure/densechange.png)
 
 The network size and density decreased a lot between phase 4 and phase 5. It is caused by the seizure in phase 4. Phase 5 had no seizure, which caused the increase in network size and density in phase 6. The fluctuations after phase 6 were caused by seizures.
@@ -235,11 +235,11 @@ plt.savefig('figure/central_actors_elc.png', dpi = 300)
 plt.show()
 
 ```
-Plot of betweeness centrality change of selected central actors:
+Plot of betweeness centrality change of selected central actors:<br/>
 ![cbc](/pset4/figure/central_actors_bc.png)
-Plot of right eigenvector centrality change of selected central actors:
+Plot of right eigenvector centrality change of selected central actors:<br/>
 ![cec](/pset4/figure/central_actors_ec.png)
-Plot of left eigenvector centrality change of selected central actors:
+Plot of left eigenvector centrality change of selected central actors:<br/>
 ![celc](/pset4/figure/central_actors_elc.png)
 
 From the plot, we can see that n1 was in central position throughout the 11 phases, although we observed a drop in betweeness centrality in phase 9. n3 and n12's centrality dropped in phase 7 but increased after phase 7. n76 was steadly becoming more central, especially since phase 6. n87 started to become central since phase 8. n85 had a drop in phase 3 but generally highly connected with important actors.
@@ -265,8 +265,8 @@ plt.savefig('n1d.png', dpi = 300)
 plt.show()
 
 ```
-We plot the in and out degree changes of n1:
-![n1d](/pset4/figure/n1d.png)
+We plot the in and out degree changes of n1:<br/>
+![n1d](/pset4/figure/n1d.png)<br/>
 Generally, phone calls from n1 (out degree) were more than calls to n1 (in degree).In phase 6, n1 received more calls than making calls to others. His communication frequency dropped a lot in phase 9 corresponding to 2 seizures.
 
 ## (g)
