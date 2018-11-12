@@ -309,7 +309,7 @@ len(set(case_l))
 net_df0 = cooffend_df[cooffend_df['SeqE'].isin(coofending_case_l)].sort_values(by = ['SeqE']).to_sparse()
 
 # the whole network took forever to build, we use a reduced network instead.
-net_df = net_df0.iloc[:100,].to_sparse()
+net_df = net_df0.iloc[1:1000].to_sparse()
 
 # build the network
 G = nx.Graph()
@@ -322,17 +322,17 @@ for i in range(len(net_df)):
     seq = net_df['SeqE'][i]
     offender = net_df['NoUnique'][i]
     # add the offender into graph
-    G.add_node(offender)
+    G.add_node(offender, Naissance = net_df['Naissance'][i], Sex = net_df['SEXE'][i])
     # as the data we use here is sorted by case number, we only need to go case by case
     if seq == case_num:
         # if the offender is still in current case
         for x in offender_l:
-            G.add_edge(offender, x)
+
             # two possible cases: this offender co-offend other cases that have beed recorded in our graph with the same person, or this is the first recorded Cooffending
-            # if G.has_edge(offender, x):
-            #     G[offender][x]['weight'] += 1
-            # else:
-            #     G.add_edge(offender, x, weight = 1)
+            if G.has_edge(offender, x):
+                G[offender][x]['weight'] += 1
+            else:
+                G.add_edge(offender, x, weight = 1)
         # add this offender in the case offender list
         offender_l.append(offender)
 
@@ -341,9 +341,6 @@ for i in range(len(net_df)):
         case_num = seq
         offender_l = [offender]
 
-
-nx.draw(G, with_labels=True)
-
 ```
 
 ### (e)
@@ -351,18 +348,23 @@ How many nodes does the network have? How many solo offenders are there in the d
 
 ```Python
 num_node = nx.number_of_nodes(G)
-
-num_solo = len(set(cooffend_df['NoUnique'])) - num_node
+num_node
+# to calculate the solo offenders, we use the number of unique offenders in the dataset minus the number of unique offenders in our co-offending dataset.
+num_solo = len(set(cooffend_df['NoUnique'])) - len(set(net_df0['NoUnique']))
+num_solo
 
 unweighted_size = G.size()
+unweighted_size
 ```
+In our reduced network, we have 830 nodes, and the unweighted network size is 695; There are 418281 solo offenders in the dataset
+
 ### (f)
 Plot the degree distribution (or an approximation of it if needed) of the network.
 
 ```Python
 coof_degree = G.degree()
 
-def PlotDegree(G):
+def PlotDegree(G, filename):
     degree_sequence = sorted([d for n, d in G.degree()], reverse=True)  # degree sequence
     degreeCount = collections.Counter(degree_sequence)
     deg, cnt = zip(*degreeCount.items())
@@ -373,10 +375,14 @@ def PlotDegree(G):
     plt.xlabel("Degree")
     ax.set_xticks([d + 0.4 for d in deg])
     ax.set_xticklabels(deg)
+    plt.savefig(filename, dpi = 300)
 
-PlotDegree(G)
+PlotDegree(G, 'figure/degree_histogram.png')
 
 ```
+Degree Histogram of our reduced network:<br/>
+![dh](/pset4/figure/degree_histogram.png)<br/>
+
 ### (g)
 How many connected components does the network have?
 
@@ -384,12 +390,13 @@ How many connected components does the network have?
 num_compo = nx.number_connected_components(G)
 num_compo
 ```
-There are 26 components in our reduced network
+There are 336 components in our reduced network
 
-We will now isolate the largest connected component and focus on it. This brings us down to a
-more manageable size.
+
 
 ### (h)
+We will now isolate the largest connected component and focus on it. This brings us down to a
+more manageable size.
 How many nodes does the largest connected component have?
 
 ```Python
@@ -398,53 +405,125 @@ max_compo
 G_max_compo = G.subgraph(list(max_compo))
 num_node_max_compo = nx.number_of_nodes(G_max_compo)
 num_node_max_compo
+
 ```
-Our largest connected component has 8 nodes
+Our largest connected component has 9 nodes
 ### (i)
 Compute the degree of the nodes, and plot the degree distribution (or an approximation of it if needed) for the largest connected component. Comment on the shape of the distribution.
 
 ```Python
-PlotDegree(G_max_compo)
+PlotDegree(G_max_compo,'figure/max_compo_degree_histogram.png' )
 ```
 ### (j)
 Describe the general shape of the largest connected component. Use the degree distribution from above, and compute statistics of the network to obtain an overview of its characteristics. You may want to consider the edge density, clustering, diameter, etc. Comment on the results.
 
 ```Python
-nx.draw_shell(G_max_compo, with_labels=True)
 
+nx.draw_shell(G_max_compo, with_labels=True)
+plt.savefig('figure/max_compo.png',dpi = 300)
 den = nx.density(G_max_compo)
 den
 dia = nx.diameter(G_max_compo)
 dia
 ```
-This component's density is 0.75, and the diameter is 2.
-
-
-Thisfinal section involves some free form investigation. The following parts are optional for undergraduates.
+Network plot of the max component in reduced network:<br/>
+![maxc](/pset4/figure/max_compo.png)<br/>
+This component's density is 0.61, and the diameter is 3.
 
 ### (k)
+Thisfinal section involves some free form investigation. The following parts are optional for undergraduates.
 How many crime events are executed only by young offenders?
 
 ```Python
-young_offenders_df = net_df0[net_df0['Jeunes'] == 1]
-adult_offenders_df = net_df0[net_df0['Jeunes'] == 0]
-young_offenders_df.head()
+young_offenders_df = cooffend_df[cooffend_df['Adultes'] == 0]
+young_offenders_df.head(20)
 len(set(young_offenders_df['SeqE']))
 ```
-There are 2517 crime events only by young offenders.
+There are no crime events only by young offenders.
 
 ### (l)
-Investigate the relationship between young offenders and adult offenders. Study the structure of the crimes that include both, young and adult offenders. Discuss any patterns you observe.
+Investigate the relationship between young offenders and adult offenders. Study the structure of the crimes that include both young and adult offenders. Discuss any patterns you observe.
 
 ```Python
-young_offenders = set(young_offenders_df['NoUnique'].tolist())
-adult_offenders = set(adult_offenders_df['NoUnique'].tolist())
+# crime of both young and adult offenders:
+co_l = net_df[(net_df['Adultes']!=0) & (net_df['Jeunes']!=0)]
+co_l
+# the data is from 2003 to 2010 so we set 1985 as threashold
+test = co_l[(co_l['Naissance'] < 1985)]
+test.shape
+
+compos = sorted(nx.connected_components(G), key=len, reverse=True)
 
 
+i = 0
+num_plots = 9
+for compo in compos:
+    if i>= num_plots:
+        break
+    c = G.subgraph(list(compo))
+
+    code = int('33'+str(i+1))
+    young = 0
+    adult = 0
+    color_map = []
+    # check if it has both young and agult
+    for node, data in c.nodes(data=True):
+        if data['Naissance'] < 1985:
+            color_map.append('red')
+            young += 1
+        else:
+            color_map.append('blue')
+            adult += 1
+
+    if young * adult == 0:
+        continue
+
+    plt.subplot(code)
+    i += 1
+    nx.draw(c, with_labels=True,node_size=40,font_size=8,node_color = color_map)
+
+plt.savefig('figure/compos.png', dpi = 300)
 
 ```
+9 components containing both young and adult offenders in reduced network:<br/>
+![cs](/pset4/figure/compos.png)<br/>
+
+We can oberve 2 main patterns: 1. one adult and multiple young offenders; 2. one young offender and multiple adults. It could be possible that some closely linked groups have few adult leaders and many young "soldiers", or groups of adult offenders will bring one or two young guy with them.   
+
+
 ### (m)
 Ask your own question, build new separate networks if needed, and get as much insight as you like. Feel free to focus on either the whole network, or the largest connected component.
 ```Python
+i = 0
+num_plots = 9
+for compo in compos:
+    if i>= num_plots:
+        break
+    c = G.subgraph(list(compo))
 
+    code = int('33'+str(i+1))
+    male = 0
+    female = 0
+    color_map = []
+    # check if it has both young and agult
+    for node, data in c.nodes(data=True):
+        if data['Sex'] == 'M':
+            color_map.append('red')
+            male += 1
+        else:
+            color_map.append('blue')
+            female += 1
+
+    if male * female == 0:
+        continue
+
+    plt.subplot(code)
+    i += 1
+    nx.draw(c, with_labels=True,node_size=40,font_size=8,node_color = color_map)
+
+plt.savefig('figure/compos_sex.png', dpi = 300)
 ```
+9 components containing both male and female offenders in reduced network:<br/>
+![cs](/pset4/figure/compos_sex.png)<br/>
+
+We ask the question about the sex of the offender. We found that major components of the cooffending network contain much less female offenders than male offenders.
