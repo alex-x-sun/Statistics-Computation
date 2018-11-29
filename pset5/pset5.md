@@ -28,7 +28,7 @@ df_cpi['date'] = pd.to_datetime(df_cpi['date'])
 ```
 
 ### (a)
-First, we will try to predict the monthly CPI without using the BER or PriceStats. Fit an AR model to the CPI data (take therst CPI value of each month as that month's CPI, you may or may not want to work in log scale in order to make the model comparable to models you t in part (c)) and report the mean squared prediction error for 1 month ahead forecasts. Which order model gives the best predictions?
+First, we will try to predict the monthly CPI without using the BER or PriceStats. Fit an AR model to the CPI data (take first CPI value of each month as that month's CPI, you may or may not want to work in log scale in order to make the model comparable to models you t in part (c)) and report the mean squared prediction error for 1 month ahead forecasts. Which order model gives the best predictions?
 
 ```python
 # Firstly we investigate the time series change in the dataset
@@ -44,7 +44,7 @@ ini_date = df_cpi['date'][0]
 # monthly data
 df_cpi['month_index'] = df_cpi.apply(lambda row: diff_month(row.date, ini_date), axis=1)
 # average cpi of every month
-data_monthly= df_cpi.groupby('month_index').aggregate(np.mean)
+data_monthly= df_cpi.groupby('month_index').agg({'CPI': 'first','PriceStats':'mean'})
 
 # plot the CPI of t+1 and t to find the time series pattern
 pd.plotting.lag_plot(data_monthly.CPI)
@@ -67,24 +67,7 @@ n =  diff_month(pd.to_datetime('2013-09-01'), ini_date)
 train = all_diff.iloc[0:n]
 test = all_diff.iloc[n:-1]
 
-
-# calculate and plot ACF and PACF
-# fig, ax = plt.subplots()
-# fig = plt.figure(figsize=(10,5))
-# ax1 = fig.add_subplot(211)
-# ax1.set_ylim([-1, 1])
-# ax1.set_xlim([0, 122])
-# fig = sm.graphics.tsa.plot_acf(all_diff.CPI, ax=ax1)
-# ax2 = fig.add_subplot(212)
-# ax2.set_ylim([-1, 1])
-# ax2.set_xlim([0, 122])
-# fig = sm.graphics.tsa.plot_pacf(all_diff.CPI, ax=ax2)
-# plt.savefig("figure/1a2.png", dpi=150)
-# plt.show()
-
-
-
-# fit the model
+# fit the model AR(1)
 model = tsa.ar_model.AR(train.CPI.values)
 fit1 = model.fit(maxlag=1)
 fit1.predict(start=len(train), end=len(train))
@@ -107,7 +90,8 @@ def predict(order):
 
 predict(1)
 
-ar_results = pd.DataFrame(index = range(1, 11), columns = ['mse'])
+# Try AR(n), n = 1,2,...10
+ar_results = pd.DataFrame(index = range(1, 10), columns = ['mse'])
 mses = []
 for idx in ar_results.index.tolist():
     ar_results['mse'][idx] = predict(idx)
@@ -115,18 +99,36 @@ for idx in ar_results.index.tolist():
 ar_results.plot()
 plt.savefig("mse.png", dpi=150)
 plt.show()
+# AR(5) model
 model = tsa.ar_model.AR(train.CPI.values)
-fit = model.fit(maxlag = 2)
+fit = model.fit(maxlag = 5)
 fit.params
 ```
+Plot the CPI of t+1 and t to find the time series pattern:<br/>
+![1a0](/pset5/figure/1a0.png)
+
+It is obvious that there is time series correlation.
+
+Plot absolute changes in 1 month for all 122 months:<br/>
+![1a1](/pset5/figure/1a1.png)
+
+Fit the AR models:<br/>
+To decide the best n for AR(n) model, we tried from AR(1) to AR(10) and plot the MSE. We found that n=5 has the best MSE. We estimated an AR(5) model and got the parameters: (phi_i is the coefficient for X_t-i)
+phi_1 = 0.13896421<br/>
+phi_2 = 0.46679018<br/>
+phi_3 = -0.10417631<br/>
+phi_4 = -0.29061451<br/>
+phi_5 = 0.21927141<br/>
+W = -0.07312825<br/>
 
 ### (b)
 How might you calculate monthly inflation rates from the CPI data and your 1 month ahead predictions? How about from PriceStats data? And BER data? (What dates would you use? Or would you use an average of many dates?) Overlay your estimates of monthly inflation rates (there should be 4 lines, one for each dataset, plus the predictions) over time (months from September 2013 onward).
 
 ```python
+# read the BER data
 df_ber = df_ber.mask(df_ber == '.')
 df_ber = df_ber.dropna()
-df_ber
+df_ber.head()
 df_ber['date1'] = pd.to_datetime(df_ber['DATE'])
 df_ber['month_index'] = df_ber.apply(lambda row: diff_month(row.date1, ini_date), axis=1)
 df_ber['BER'] = df_ber.apply(lambda row: float(row.T10YIE), axis=1)
@@ -134,13 +136,20 @@ df_ber['BER'] = df_ber.apply(lambda row: float(row.T10YIE), axis=1)
 monthly_ber = df_ber.groupby('month_index').agg({'BER':{'ber_avg': 'mean', 'ber_last': 'last'}})
 monthly_ber.columns = monthly_ber.columns.droplevel(0)
 
-monthly_other = df_cpi.groupby('month_index').agg({'CPI':{'CPI':'first'}})
-monthly_other.columns = monthly_other.columns.droplevel(0)
+monthly_other = df_cpi.groupby('month_index').agg({'CPI': 'first','PriceStats':'mean'})
 
 monthly_all = monthly_ber.join(monthly_other, how='inner')
 diff_df = monthly_all.diff().iloc[1:]
 diff_df.head()
 
+```
+To calculate the inflation rate, r = CPI_t - CPI_(t-1)/CPI_t,
+
+
+### (c)
+Next, we will include external regressors to try to improve the predictions. Include as external regressors monthly average PriceStats data and BER data tot a new AR model to the CPI. Report your prediction error. Try instead using PriceStats data and BER data from the last day of each month as your external regressors. Fit another AR model. Which model performs better in prediction? (Hint: Again, in order to match the units of your predictors and responses, you'll want to either work on a log scale or work with inflation rates. Please justify your choices in which values you decide to work with.)
+
+```python
 train_ex = diff_df.iloc[0:n]
 test_ex = diff_df.iloc[n:-1]
 
@@ -173,6 +182,14 @@ predict_ex(1, ['ber_avg'])
 
 predict_ex(2, ['ber_avg'])
 
+```
+
+### (d)
+Try to improve your model from part (c). What is the smallest prediction error you can obtain? You might consider including MA terms, adding a seasonal AR term, or adding multiple daily values (or values from different months) of PriceStats and BER data as external regressors.
+
+```python
+
+
 ar_ex_results = pd.DataFrame(index = range(1, 4), columns = ['avg_mse', 'last_mse'])
 for idx in ar_ex_results.index.tolist():
     ar_ex_results['avg_mse'][idx] = predict_ex(idx, ['ber_avg'])
@@ -185,12 +202,6 @@ fit = model.fit()
 print(fit.summary())
 
 
-```
-
-### (c)
-Next, we will include external regressors to try to improve the predictions. Include as external regressors monthly average PriceStats data and BER data tot a new AR model to the CPI. Report your prediction error. Try instead using PriceStats data and BER data from the last day of each month as your external regressors. Fit another AR model. Which model performs better in prediction? (Hint: Again, in order to match the units of your predictors and responses, you'll want to either work on a log scale or work with inflation rates. Please justify your choices in which values you decide to work with.)
-
-```python
 def predict_am(order_am, regres_names):
     train_set = train_ex
     test_set = test_ex
@@ -212,29 +223,19 @@ def predict_am(order_am, regres_names):
 predict_am(1, ['ber_avg'])
 
 predict_am(1, ['ber_last'])
-
 ```
-
-### (d)
-Try to improve your model from part (c). What is the smallest prediction error you can obtain? You might consider including MA terms, adding a seasonal AR term, or adding multiple daily values (or values from dierent months) of PriceStats and BER data as external regressors.
-
-```python
-
-```
-
+ARMA model estimation result:<br/>
+![arima](/pset5/figure/arima.PNG)
 ### (e)
 Consider the MA(1) model, X_t = W_t + theta*W_t-1, where {W_t} ~ WN(0, sigma^2). Find the autocovariance function of {X_t}.
 
-```python
-
-```
+![1e](/pset5/figure/1e.PNG)
 
 ### (f)
 Consider the AR(1) model, X_t = phi*X_t-1 + W_t, where {W_t} ~ WN(0, sigma^2). Suppose |phi| < 1. Find the autocovariance function of {X_t}.
 
-```python
+![1f](/pset5/figure/1f.PNG)
 
-```
 
 ## 5.2  The Mauna Loa CO2 Concentration
 
@@ -300,8 +301,12 @@ Linear model fit plot:<br/>
 Residual-Fitted plot:<br/>
 ![2a2](/pset5/figure/2a2.png)
 
-const          306.767103
-month_index      0.126996
+The estimated parameters: <br/>
+
+const          306.767103<br/>
+month_index      0.126996<br/>
+
+The residual plot shows that the error term violates the assumption of OLS.
 
 
 ### (b)
@@ -342,25 +347,25 @@ Linear model fit plot:<br/>
 Residual-Fitted plot:<br/>
 ![2b2](/pset5/figure/2b2.png)
 
-Intercept                   314.206513
-np.power(month_index, 2)      0.000087
-month_index                   0.065193
+The estimated parameters: <br/>
+Intercept                   314.206513<br/>
+np.power(month_index, 2)      0.000087<br/>
+month_index                   0.065193<br/>
 
+The residuals are closer to N(0, sigma).
 
 ### (c)
 Which fit (F1 or F2) is better in capturing the trend in the data? Explain.
 
-```python
-data['resid'] = pd.Series(f2.resid)
-data.head()
-
-
-```
+The F2 is better. The residuals in F1 are not distributed like N(0, sigma). In addition, F2 has higher adjusted R-squared value than F1.
 
 ### (d)
 Consider F2(t). We will now extract the periodic component which appears in the data. Average the residual C_i - F2(t_i) over each month. Namely, collect all the data for Jan (resp.Feb, Mar, etc) and average them to get one data point for Jan (resp. Feb, Mar, etc). The collection of those points can be interpolated to form a periodic signal P_i. Plot P_i.
 
 ```python
+data['resid'] = pd.Series(f2.resid)
+data.head()
+
 def extract_month(m):
     temp = data.loc[data['Mn'] == m]
     return temp['resid'].mean()
@@ -388,7 +393,7 @@ plt.show()
 ```
 Plot of periodic signal P_i to i:<br/>
 ![2d](/pset5/figure/2d.png)
-Monthly Residual Plot:<br/>
+Monthly Residual Plot in 1 Year:<br/>
 ![2d1](/pset5/figure/2d1.png)
 
 
